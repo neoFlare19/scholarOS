@@ -102,48 +102,44 @@ export default function DashboardPage() {
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
       <DashboardShell>
-        {/* Stats Cards Row: 4 Columns (Made wider for premium aesthetic) */}
+        
+        {/* UPDATED STATS CARDS ROW: The sparkline chart (pillars) and the +8% badge have been entirely removed */}
         <motion.div 
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid gap-5 md:grid-cols-2 xl:grid-cols-4"
+          className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4"
         >
           {statistics.map((item, index) => (
             <motion.div 
               key={item.label} 
               variants={itemVariants}
               whileHover={{ y: -4, boxShadow: "0 24px 80px rgba(15,23,42,0.12)" }}
-              className="group relative rounded-[28px] glass-panel p-6 shadow-sm border-white/60 hover:border-blue-200/60 transition-all duration-300"
+              className="group relative flex flex-col rounded-[28px] glass-panel p-6 shadow-sm border-white/60 hover:border-blue-200/60 transition-all duration-300 min-w-0"
             >
               <div className="absolute inset-x-0 top-0 h-1 rounded-t-[28px] bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500" />
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-sm font-medium tracking-wide text-slate-500 uppercase">{item.label}</span>
-                <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-violet-50 p-2.5 text-blue-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
+              
+              <div className="flex items-start justify-between mb-2">
+                <span className="text-sm font-medium tracking-wide text-slate-500 uppercase break-words min-w-0 mr-2">{item.label}</span>
+                <div className="shrink-0 rounded-2xl bg-gradient-to-br from-blue-50 to-violet-50 p-2.5 text-blue-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
                   <LayoutGrid className="h-5 w-5" />
                 </div>
               </div>
-              <div className="flex items-end justify-between mt-2">
+              
+              {/* Removed the container for pillars and +8% badge. Now, the number sits cleanly on the left. */}
+              <div className="mt-0">
                 <div className="text-4xl font-bold tracking-tight text-slate-900">
                   <AnimatedCounter value={item.value} suffix={item.suffix} />
                 </div>
-                {/* Mini Sparkline Chart (CSS Only) */}
-                <div className="flex items-end h-8 gap-1">
-                  {[40, 60, 45, 80, 65, 100, 90].map((h, i) => (
-                    <div key={i} className="w-1.5 rounded-full bg-slate-200 group-hover:bg-blue-200 transition-colors" style={{ height: `${h * 0.5}px` }} />
-                  ))}
-                  <div className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">+8%</div>
-                </div>
               </div>
-              <p className="mt-4 text-sm leading-6 text-slate-500 max-w-xs">{item.description}</p>
+              
+              <p className="mt-4 text-xs leading-5 text-slate-500 break-words min-w-0">{item.description}</p>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Middle Row: Papers (Left) | Projects (Right) */}
         <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           
-          {/* Recent Papers Widget */}
           <Reveal className="glass-panel gradient-stroke-premium rounded-[32px] p-6 shadow-sm border-white/60">
             <div className="mb-6 flex items-center justify-between">
               <div>
@@ -190,7 +186,6 @@ export default function DashboardPage() {
             </div>
           </Reveal>
 
-          {/* Projects & Tasks Widget */}
           <Reveal className="glass-panel gradient-stroke-premium rounded-[32px] p-6 shadow-sm border-white/60">
             <div className="mb-6 flex items-center justify-between">
               <div>
@@ -203,7 +198,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Projects Mini List */}
             <div className="space-y-4">
               {projects.map((project, idx) => (
                 <motion.div
@@ -238,7 +232,6 @@ export default function DashboardPage() {
               ))}
             </div>
             
-            {/* Tasks Mini List */}
             <div className="mt-5 space-y-2">
               <div className="flex items-center justify-between border-b border-slate-200/50 pb-2 mb-2">
                 <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Priority Tasks</span>
@@ -281,10 +274,8 @@ export default function DashboardPage() {
           </Reveal>
         </div>
 
-        {/* Bottom Row: Notifications (Left) | Activity Feed (Right) */}
         <div className="grid gap-6 md:grid-cols-2">
           
-          {/* Notifications */}
           <Reveal className="glass-panel gradient-stroke-premium rounded-[32px] p-6 shadow-sm border-white/60">
             <div className="mb-5 flex items-center justify-between">
               <div>
@@ -313,7 +304,6 @@ export default function DashboardPage() {
             </div>
           </Reveal>
 
-          {/* Premium Activity Feed */}
           <Reveal className="glass-panel gradient-stroke-premium rounded-[32px] p-6 shadow-sm border-white/60 relative overflow-hidden">
             <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-blue-400/10 blur-2xl" />
             
@@ -325,7 +315,6 @@ export default function DashboardPage() {
               <Activity className="h-5 w-5 text-violet-500" />
             </div>
 
-            {/* Timeline Connector Line */}
             <div className="absolute left-10 top-16 bottom-8 w-px bg-gradient-to-b from-blue-400 via-violet-400 to-transparent opacity-30" />
 
             <div className="relative space-y-5 pl-4">
@@ -339,7 +328,6 @@ export default function DashboardPage() {
                     transition={{ delay: 0.3 + idx * 0.05 }}
                     className="relative flex items-start gap-4"
                   >
-                    {/* Timeline Node */}
                     <div className="absolute -left-[18px] top-1 flex h-3 w-3 items-center justify-center rounded-full bg-white shadow-md ring-2 ring-blue-100">
                       <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                     </div>
@@ -365,7 +353,6 @@ export default function DashboardPage() {
 
         </div>
 
-        {/* Bottom Action Card */}
         <Reveal className="rounded-[32px] bg-gradient-to-br from-blue-600 via-violet-600 to-cyan-500 p-[1px] shadow-premium">
           <div className="rounded-[31px] bg-white/95 p-6 sm:p-8 backdrop-blur-xl">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
