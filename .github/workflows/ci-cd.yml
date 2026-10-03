@@ -80,9 +80,11 @@ jobs:
               echo "MySQL is ready"
               exit 0
             fi
+
             echo "Waiting for MySQL..."
             sleep 2
           done
+
           echo "MySQL did not become ready"
           exit 1
 
@@ -121,11 +123,76 @@ jobs:
         run: npm run build
 
   deploy:
-    name: Deploy
+    name: Deploy to production
     needs: [backend, frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
-      - name: CI passed
-        run: echo "Backend and frontend CI passed. Production deployment will be connected next."
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy source to server
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='backend/.env' \
+            --exclude='backend/vendor/' \
+            --exclude='backend/storage/' \
+            --exclude='frontend/node_modules/' \
+            --exclude='frontend/dist/' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
+            ./ \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
+
+      - name: Rebuild and restart ScholarOS
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" << EOF
+
+            set -e
+
+            cd "${DEPLOY_PATH}"
+
+            echo "Building ScholarOS containers..."
+            sudo -n docker compose build backend frontend
+
+            echo "Starting ScholarOS containers..."
+            sudo -n docker compose up -d backend frontend
+
+            echo "Running database migrations..."
+            sudo -n docker exec scholaros-backend php artisan migrate --force
+
+            echo "Clearing Laravel configuration cache..."
+            sudo -n docker exec scholaros-backend php artisan config:clear
+
+            echo "Checking backend..."
+            curl -fsS http://127.0.0.1:8001/api/v1/ping
+
+            echo "Checking frontend..."
+            curl -fsSI http://127.0.0.1:5174/
+
+            echo "ScholarOS deployment successful!"
+          EOF
