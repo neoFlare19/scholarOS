@@ -14,6 +14,22 @@ jobs:
     name: Backend CI
     runs-on: ubuntu-latest
 
+    env:
+      APP_ENV: testing
+      APP_DEBUG: true
+
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: scholaros_test
+      DB_USERNAME: scholaros
+      DB_PASSWORD: scholaros_password
+
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: log
+
     services:
       mysql:
         image: mysql:8.0
@@ -25,7 +41,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -38,7 +54,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
@@ -48,20 +64,30 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Prepare Laravel environment
+      - name: Prepare Laravel
         run: |
           cp .env.example .env
           php artisan key:generate --force
+          php artisan config:clear
 
-          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
-          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
-          sed -i 's/^DB_PORT=.*/DB_PORT=3306/' .env
-          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=scholaros_test/' .env
-          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=scholaros/' .env
-          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=scholaros_password/' .env
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            if php -r '
+              $s = @fsockopen("127.0.0.1", 3306, $errno, $errstr, 2);
+              exit($s ? 0 : 1);
+            '; then
+              echo "MySQL is ready"
+              exit 0
+            fi
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+          echo "MySQL did not become ready"
+          exit 1
 
       - name: Run migrations
-        run: php artisan migrate --force
+        run: php artisan migrate:fresh --force
 
       - name: Run Laravel tests
         run: php artisan test
@@ -101,7 +127,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: CI/CD deployment placeholder
-        run: |
-          echo "CI passed successfully."
-          echo "CD deployment will be connected to the ScholarOS server next."
+      - name: CI passed
+        run: echo "Backend and frontend CI passed. Production deployment will be connected next."
