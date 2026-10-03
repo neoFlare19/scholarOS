@@ -1,0 +1,32 @@
+export const projects = [
+  {
+    id: "PRJ-014",
+    name: "NeuroLens Initiative",
+    lead: "Prof. Nadia Mensah",
+    institution: "Imperial Research Lab",
+    progress: 82,
+    members: 12,
+    dueDate: "May 18",
+    phase: "Data validation",
+  },
+  {
+    id: "PRJ-022",
+    name: "BlueGrid Climate Archive",
+    lead: "Dr. Leila Morgan",
+    institution: "North Atlantic Institute",
+    progress: 64,
+    members: 9,
+    dueDate: "Jun 02",
+    phase: "Model training",
+  },
+  {
+    id: "PRJ-031",
+    name: "Civic Insight Observatory",
+    lead: "Samuel Okoye",
+    institution: "Urban Futures Center",
+    progress: 47,
+    members: 16,
+    dueDate: "Jun 27",
+    phase: "Literature synthesis",
+  },
+];

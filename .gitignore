@@ -1,0 +1,19 @@
+.DS_Store
+.DS_Store
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Laravel
+backend/storage/logs/
+backend/storage/framework/
+backend/bootstrap/cache/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store

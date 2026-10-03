@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScholarOS — Research Paper & Collaboration Platform</title>
+    <meta
+      name="description"
+      content="ScholarOS is a premium SaaS frontend prototype for research paper management, collaboration, project tracking, and publication workflows."
+    />
+    <script>
+      // Apply theme before React mounts to prevent flash of wrong theme
+      (function () {
+        try {
+          var savedTheme = localStorage.getItem("scholaros_theme") || "system";
+          var systemPrefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          var resolvedTheme =
+            savedTheme === "system"
+              ? systemPrefersDark
+                ? "dark"
+                : "light"
+              : savedTheme;
+
+          if (resolvedTheme === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {
+          // Fail silently, ThemeProvider will handle it on mount
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
