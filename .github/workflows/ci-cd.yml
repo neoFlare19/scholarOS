@@ -28,7 +28,6 @@ jobs:
       CACHE_STORE: array
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
-
       MAIL_MAILER: log
 
     services:
@@ -190,11 +189,36 @@ jobs:
 
             cd "${DEPLOY_PATH}"
 
+            echo "Preparing Laravel runtime directories..."
+            mkdir -p \
+              backend/bootstrap/cache \
+              backend/storage/framework/cache \
+              backend/storage/framework/sessions \
+              backend/storage/framework/testing \
+              backend/storage/framework/views \
+              backend/storage/logs
+
             echo "Building ScholarOS containers..."
             sudo -n docker compose build backend frontend
 
             echo "Starting ScholarOS containers..."
             sudo -n docker compose up -d backend frontend
+
+            echo "Waiting for backend container..."
+            for i in {1..30}; do
+              if sudo -n docker inspect -f '{{.State.Running}}' scholaros-backend 2>/dev/null | grep -q true; then
+                echo "Backend container is running"
+                break
+              fi
+
+              if [ "\$i" -eq 30 ]; then
+                echo "Backend container failed to start"
+                sudo -n docker logs --tail=100 scholaros-backend || true
+                exit 1
+              fi
+
+              sleep 2
+            done
 
             echo "Running database migrations..."
             sudo -n docker exec scholaros-backend php artisan migrate --force
